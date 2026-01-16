@@ -1,9 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/Hedgehog.Stateful/Hedgehog.Stateful.fsproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/Hedgehog.Stateful.Tests.CSharp/Hedgehog.Stateful.Tests.CSharp.csproj" />
-    <Project Path="tests/Hedgehog.Stateful.Tests.FSharp/Hedgehog.Stateful.Tests.FSharp.fsproj" />
-  </Folder>
-</Solution>
