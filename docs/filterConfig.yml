@@ -1,0 +1,29 @@
+apiRules:
+- include:
+    uidRegex: ^Hedgehog\.Stateful\.Linq
+    type: Namespace
+- include:
+    uidRegex: ^Hedgehog\.Stateful\.Linq
+    type: Type
+- include:
+    uidRegex: ^Hedgehog\.Stateful.\Linq
+- include:
+    uidRegex: ^Hedgehog\.Stateful\.FSharp
+    type: Namespace
+- include:
+    uidRegex: ^Hedgehog\.Stateful\.FSharp
+    type: Type  
+- include:
+    uidRegex: ^Hedgehog\.Stateful\.FSharp
+- include:
+    uidRegex: ^Hedgehog\.Stateful
+    type: Namespace
+- include:
+    uidRegex: ^Hedgehog\.Stateful
+    type: Type
+- include:
+    uidRegex: ^Hedgehog\.Stateful
+- exclude:
+    uidRegex: ^Microsoft
+- exclude:
+    uidRegex: ^System

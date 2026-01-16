@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Version>1.0.0-beta1</Version>
+        <Description>Stateful testing for Hedgehog</Description>
+        <PackageId>Hedgehog.Stateful</PackageId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Hedgehog.Stateful.Tests.FSharp" />
+        <InternalsVisibleTo Include="Hedgehog.Stateful.Tests.CSharp" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Compile Include="Types.fs" />
+      <Compile Include="Var.fs" />
+      <Compile Include="Action.fs" />
+      <Compile Include="ICommand.fs" />
+      <Compile Include="Command.fs" />
+      <Compile Include="Sequential.fs" />
+      <Compile Include="Parallel.fs" />
+      <Compile Include="SequentialSpecification.fs" />
+      <Compile Include="ParallelSpecification.fs" />
+      <Compile Include="Linq\VarExtensions.fs" />
+      <Compile Include="Linq\SpecificationExtensions.fs" />
+      <Compile Include="Linq\NoValue.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="..\..\img\hedgehog-logo.png" Pack="true" PackagePath="\" Visible="false" />
+      <None Include="..\..\LICENSE" Pack="true" PackagePath="\" Visible="false" />
+      <None Include="..\..\README.md" Pack="true" PackagePath="\" Visible="false" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Hedgehog" Version="2.0.2" />
+    </ItemGroup>
+
+</Project>

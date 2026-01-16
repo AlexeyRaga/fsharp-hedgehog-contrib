@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Authors>Alexey Raga</Authors>
+    <Copyright>Copyright © 2025</Copyright>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/AlexeyRaga/fsharp-hedgehog-contrib/</PackageProjectUrl>
+    <PackageIcon>hedgehog-logo.png</PackageIcon>
+    <PackageIconUrl>https://github.com/hedgehogqa/fsharp-hedgehog/raw/master/img/hedgehog-logo.png</PackageIconUrl>
+    <PackageTags>fsharp;f#;c#;csharp;dotnet;testing</PackageTags>
+    <RepositoryUrl>https://github.com/AlexeyRaga/fsharp-hedgehog-contrib</RepositoryUrl>
+  </PropertyGroup>
+</Project>

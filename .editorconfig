@@ -1,0 +1,13 @@
+root = true
+
+[*] # rules that follow apply to files with any extension
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.csproj, *.fsproj, *.props]
+indent_size = 2
+
+[*.cs]
+csharp_new_line_before_open_brace = all

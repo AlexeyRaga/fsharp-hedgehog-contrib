@@ -1,0 +1,72 @@
+name: Pull Request
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Ensure no Windows line endings
+      run: ./validate.sh
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - name: Install dependencies
+      run: |
+        dotnet restore
+        dotnet tool restore
+
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Test
+      run: dotnet test --no-build --configuration Release
+
+    - name: Generate DocFX metadata
+      run: |
+        dotnet fsi gen-docfx.fsx Release
+        dotnet docfx build docs/docfx.json
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v4
+      with:
+        path: _site/
+
+
+  fable-tests:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - name: Setup NodeJs
+      uses: actions/setup-node@v3
+      with:
+        node-version-file: ".nvmrc"
+        
+    - name: Install npm packages
+      run: npm install
+      working-directory: ./tests/Hedgehog.Tests
+
+    - name: Fable Tests (Hedgehog.Tests)
+      run: |
+        dotnet tool restore
+        npm test
+      working-directory: ./tests/Hedgehog.Tests

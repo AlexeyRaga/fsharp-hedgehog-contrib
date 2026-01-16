@@ -1,0 +1,66 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+
+  "build": {
+    "content": [
+      {
+        "files": [
+          "api/**.yml",
+          "api/toc.yml",
+          "api/index.md"
+        ]
+      },
+      {
+        "files": [
+          "*.md",
+          "toc.yml"
+        ]
+      },
+      {
+        "files": [
+          "stateful/**.md",
+          "stateful/**/toc.yml",
+          "stateful/toc.yml"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**",
+          "assets/**"
+        ]
+      }
+    ],
+    "output": "../_site",
+    "template": [
+      "default",
+      "modern",
+      "template"
+    ],
+    "globalMetadata": {
+      "_disableContribution": true,
+      "_disableBreadcrumb": true,
+      "_disableNextArticle": true,
+      "_appName": "Hedgehog.Stateful",
+      "_appTitle": "Hedgehog.Stateful",
+      "_appLogoPath": "images/logo.png",
+      "_appFaviconPath": "images/favicon.ico",
+      "_enableSearch": true,
+      "pdf": false,
+      "_languages": {
+        "Hedgehog.Stateful.Linq": "csharp",
+        "Hedgehog.Linq": "csharp",
+        "Hedgehog.FSharp": "fsharp"
+      },
+      "_landingPage": "stateful/index.md"
+    },
+    "fileMetadata": {
+      "_lang": {
+        "api/Hedgehog.Stateful.Linq*.yml": "csharp",
+        "api/Hedgehog.Stateful.FSharp*.yml": "fsharp",
+        "api/Hedgehog*.yml": "fsharp"
+      }
+    }
+  }
+}
