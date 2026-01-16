@@ -41,7 +41,7 @@ jobs:
         dotnet docfx build docs/docfx.json
 
     - name: Pack
-      run: dotnet pack --no-restore --no-build4 -o ./packages
+      run: dotnet pack --no-restore --no-build -o ./packages
 
     - name: Publish packages
       if: (github.ref == 'refs/heads/main')

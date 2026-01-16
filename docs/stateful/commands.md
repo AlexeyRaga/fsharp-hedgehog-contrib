@@ -1,14 +1,17 @@
 # Commands
 
-Commands are the heart of stateful testing. Each command represents a single operation you can perform on your system - like opening a door, adding an item to a cart, or incrementing a counter.
+Commands are the heart of stateful testing. Each command represents a single operation you can perform on your system -
+like opening a door, adding an item to a cart, or incrementing a counter.
 
 Hedgehog then uses these individual actions (commands) to build up valid sequences that simulate client's behaviour.
 
-This page dives deep into the `Command` interface, explaining how commands work, when they execute, and how to use state to chain operations together.
+This page dives deep into the `Command` interface, explaining how commands work, when they execute, and how to use state
+to chain operations together.
 
 ## Why Two Phases? Generation vs Execution
 
-Hedgehog's stateful testing uses a two-phase approach: **generation** and **execution**. This might seem like unnecessary complexity at first—why not just generate and execute commands in one step?
+Hedgehog's stateful testing uses a two-phase approach: **generation** and **execution**. This might seem like
+unnecessary complexity at first—why not just generate and execute commands in one step?
 
 The answer lies in **efficiency** and **effective shrinking**.
 
@@ -16,11 +19,16 @@ The answer lies in **efficiency** and **effective shrinking**.
 
 Imagine if we generated commands by executing them directly against your system:
 
-1. **No way to pre-validate sequences**: We'd discover invalid sequences only during execution—wasting time running operations that don't make sense (like unlocking an already unlocked door)
+1. **No way to pre-validate sequences**: We'd discover invalid sequences only during execution—wasting time running
+   operations that don't make sense (like unlocking an already unlocked door)
 
-2. **Expensive shrinking**: When a test fails, Hedgehog tries hundreds of smaller variations to find the minimal failing case. Without pre-validation, each shrunk sequence would need to execute against your real system, even if it's obviously invalid (like trying to pop from an empty stack)
+2. **Expensive shrinking**: When a test fails, Hedgehog tries hundreds of smaller variations to find the minimal failing
+   case. Without pre-validation, each shrunk sequence would need to execute against your real system, even if it's
+   obviously invalid (like trying to pop from an empty stack). We can (and should!) do a runtime check and simply
+   ignore invalid steps at runtime, but the effort to get to that point is still wasted
 
-3. **External dependencies**: Your system might involve databases, network calls, or rate-limited APIs. Executing invalid sequences during shrinking would waste resources and time
+3. **External dependencies**: Your system might involve databases, network calls, or rate-limited APIs. Executing
+   invalid sequences during shrinking would waste resources and time
 
 ### The Solution: Symbolic Execution During Generation
 
@@ -33,11 +41,13 @@ By separating generation from execution, Hedgehog can:
 Here's how it works:
 
 **Generation phase** (fast, no SUT calls):
+
 - Build a sequence by checking `Precondition` against the **model state**
 - Update state symbolically using `Var<T>` placeholders for outputs
 - Shrinking can try hundreds of variations, rejecting invalid ones instantly
 
 **Execution phase** (only valid sequences):
+
 - Check `Require` with concrete values from the environment
 - Actually call your system's methods
 - Verify results with `Ensure`
@@ -53,9 +63,11 @@ Shrink attempt 2: Push(1), Pop, Pop, BuggyOperation  ← REJECTED at generation 
 Shrink attempt 3: Push(1), BuggyOperation  ← EXECUTED (valid sequence)
 ```
 
-Without symbolic execution, all three shrink attempts would execute against your real stack. With it, only the third attempt needs to touch your system—the first two are rejected instantly during generation.
+Without symbolic execution, all three shrink attempts would execute against your real stack. With it, only the third
+attempt needs to touch your system—the first two are rejected instantly during generation.
 
 **This separation is especially valuable for:**
+
 - Systems with external dependencies (databases, APIs, file systems)
 - Expensive operations (network calls, complex computations)
 - Rate-limited services (each wasted execution burns quota)
@@ -63,15 +75,20 @@ Without symbolic execution, all three shrink attempts would execute against your
 
 ## Understanding State
 
-State is shared throughout both phases of testing: first during **generation** (when Hedgehog builds up a series of commands to execute), and then during **execution** (when those commands actually run against your system).
+State is shared throughout both phases of testing: first during **generation** (when Hedgehog builds up a series of
+commands to execute), and then during **execution** (when those commands actually run against your system).
 
-The key insight is that some parts of the state can be known during generation, while others only become known during execution:
+The key insight is that some parts of the state can be known during generation, while others only become known during
+execution:
 
-- **Known at generation time**: When generating a sequence that includes `LockDoorCommand`, we know the door will be "Locked" for the next action in the sequence - even before executing anything. This is **concrete state**.
-  
-- **Known only at execution time**: If the system returns a lock code when the door is locked, we know *that a code exists* during generation, but the actual value is only available after execution. This is **symbolic state**.
+- **Known at generation time**: When generating a sequence that includes `LockDoorCommand`, we know the door will be "
+  Locked" for the next action in the sequence - even before executing anything. This is **concrete state**.
 
-We represent concrete state using regular properties (like `bool IsLocked`), and symbolic state using the `Var<T>` type (like `Var<string> LockCode`).
+- **Known only at execution time**: If the system returns a lock code when the door is locked, we know *that a code
+  exists* during generation, but the actual value is only available after execution. This is **symbolic state**.
+
+We represent concrete state using regular properties (like `bool IsLocked`), and symbolic state using the `Var<T>`
+type (like `Var<string> LockCode`).
 
 Here's an example of a door state that combines both:
 
@@ -96,7 +113,8 @@ public record DoorState
 
 ---
 
-**The key rule:** At generation time, you can only access the **concrete parts** of the state. You cannot resolve symbolic variables because execution hasn't happened yet!
+**The key rule:** At generation time, you can only access the **concrete parts** of the state. You cannot resolve
+symbolic variables because execution hasn't happened yet!
 
 ## The Command Interface
 
@@ -178,43 +196,56 @@ Let's understand each piece and how they work together.
 
 ### Understanding Env
 
-The `Env` (environment) is a key concept that allows you to resolve symbolic state values into concrete values, giving you access to the real execution-time values.
+The `Env` (environment) is a key concept that allows you to resolve symbolic state values into concrete values, giving
+you access to the real execution-time values.
 
 **Methods with Env** (can resolve symbolic values):
+
 - `Require` - Check preconditions using actual runtime values
 - `Execute` - Perform operations using resolved values
 - `Ensure` - Verify results using actual values
 
 **Methods without Env** (can only access concrete state):
+
 - `Generate` - Only has access to structural/concrete state
 - `Update` - Works with symbolic variables, doesn't resolve them
 
-During sequence generation, symbolic values don't have concrete runtime values yet, so `Generate` and `Update` cannot receive an `Env`. However, during execution, `Require`, `Execute`, and `Ensure` all receive an `Env` that lets you resolve any `Var<T>` to its actual runtime value.
+During sequence generation, symbolic values don't have concrete runtime values yet, so `Generate` and `Update` cannot
+receive an `Env`. However, during execution, `Require`, `Execute`, and `Ensure` all receive an `Env` that lets you
+resolve any `Var<T>` to its actual runtime value.
 
 ## The Command Lifecycle
 
-When Hedgehog builds and executes a test sequence, each command goes through two distinct phases. Understanding this lifecycle is key to grasping how stateful testing achieves efficiency.
+When Hedgehog builds and executes a test sequence, each command goes through two distinct phases. Understanding this
+lifecycle is key to grasping how stateful testing achieves efficiency.
 
 ### Phase 1: Generation (Symbolic Execution)
 
-During generation, Hedgehog builds a sequence of commands **without touching your real system**. This happens once during initial generation and potentially hundreds of times during shrinking.
+During generation, Hedgehog builds a sequence of commands **without touching your real system**. This happens once
+during initial generation and potentially hundreds of times during shrinking.
 
 For each command in sequence:
+
 ```text
 1. Precondition → Should we include this command? (checks structural state only - no Env)
 2. Generate     → Generate random input for this command (only if Precondition returns true)
 3. Update       → Update model state symbolically (enables next command's Precondition check)
 ```
 
-**Key insight**: The `Update` method runs during generation to evolve the model state. This lets subsequent commands in the sequence check their `Precondition` against the updated state. For example, after a `LockDoorCommand`, the state shows `IsLocked = true`, so `UnlockDoorCommand` knows it can be included next.
+**Key insight**: The `Update` method runs during generation to evolve the model state. This lets subsequent commands in
+the sequence check their `Precondition` against the updated state. For example, after a `LockDoorCommand`, the state
+shows `IsLocked = true`, so `UnlockDoorCommand` knows it can be included next.
 
-**During shrinking**: When a test fails, Hedgehog tries removing commands or shrinking their inputs. For each shrink attempt, it re-runs this generation phase to validate the sequence **without executing anything**. Invalid sequences (like trying to pop from an empty stack) are rejected instantly based on `Precondition` checks—no SUT calls needed!
+**During shrinking**: When a test fails, Hedgehog tries removing commands or shrinking their inputs. For each shrink
+attempt, it re-runs this generation phase to validate the sequence **without executing anything**. Invalid sequences (
+like trying to pop from an empty stack) are rejected instantly based on `Precondition` checks—no SUT calls needed!
 
 ### Phase 2: Execution (Real Operations)
 
 Once we have a valid sequence, execution runs **exactly once** against your real system:
 
 For each command in sequence:
+
 ```text
 1. Require      → Runtime check: can we execute with these concrete values? (has Env - can resolve symbolic values)  
 2. Execute      → Run the actual operation on the real system
@@ -222,9 +253,12 @@ For each command in sequence:
 4. Ensure       → Verify the result matches our expectations
 ```
 
-**Why `Require`?** Even though the sequence passed generation validation, some commands might reference symbolic variables that didn't get bound (because earlier commands were skipped). The `Require` method lets you verify that all needed values are actually available before executing.
+**Why `Require`?** Even though the sequence passed generation validation, some commands might reference symbolic
+variables that didn't get bound (because earlier commands were skipped). The `Require` method lets you verify that all
+needed values are actually available before executing.
 
-**The efficiency payoff**: By the time we reach execution, we know the sequence is structurally valid. We avoid wasting time (and API calls, database operations, etc.) on sequences that would obviously fail.
+**The efficiency payoff**: By the time we reach execution, we know the sequence is structurally valid. We avoid wasting
+time (and API calls, database operations, etc.) on sequences that would obviously fail.
 
 ### 1. Precondition: Deciding Whether to Generate
 
@@ -287,7 +321,8 @@ public class KnockKnockDoorCommand : Command<Door, DoorState, int, bool>
 
 ---
 
-**Key insight:** At generation time, you only know the *structure* - "the door is locked", "the stack has 3 items" - but not the actual values like "the lock code is 1234" or "the top item is 42". Those require execution.
+**Key insight:** At generation time, you only know the *structure* - "the door is locked", "the stack has 3 items" - but
+not the actual values like "the lock code is 1234" or "the top item is 42". Those require execution.
 
 ### 2. Generate: Creating Command Input
 
@@ -297,7 +332,8 @@ public class KnockKnockDoorCommand : Command<Door, DoorState, int, bool>
 
 **Returns:** A `Gen<TInput>` generator that produces input values
 
-**Important:** This is only called when `Precondition` returns `true`, so you can assume the structural preconditions are already satisfied.
+**Important:** This is only called when `Precondition` returns `true`, so you can assume the structural preconditions
+are already satisfied.
 
 ### 3. Require: Runtime Precondition Check
 
@@ -307,15 +343,22 @@ public class KnockKnockDoorCommand : Command<Door, DoorState, int, bool>
 
 **Returns:** `true` to proceed with execution, `false` to skip this command (the test continues with remaining commands)
 
-**Important:** Returning `false` does NOT fail the test - it simply skips the command. This is different from `Ensure`, which validates correctness.
+**Important:** Returning `false` does NOT fail the test - it simply skips the command. This is different from `Ensure`,
+which validates correctness.
 
-**Key difference from Precondition:** `Require` DOES receive an `Env` parameter, so it CAN resolve symbolic variables! This is where you check concrete runtime values that weren't known during generation.
+**Key difference from Precondition:** `Require` DOES receive an `Env` parameter, so it CAN resolve symbolic variables!
+This is where you check concrete runtime values that weren't known during generation.
 
-**When you need it:** The most common case is when your `Generate` method returns `Var<T>` as part of the input (e.g., picking from a list of symbolic IDs). Since previous commands can be skipped, those symbolic variables might not be bound at execution time. Override `Require` to check if such variables can actually be resolved before attempting to use them.
+**When you need it:** The most common case is when your `Generate` method returns `Var<T>` as part of the input (e.g.,
+picking from a list of symbolic IDs). Since previous commands can be skipped, those symbolic variables might not be
+bound at execution time. Override `Require` to check if such variables can actually be resolved before attempting to use
+them.
 
-> **💡 Tip:** For a detailed explanation of when and how to use `Require`, including complete examples with symbolic variables in inputs, see [Runtime Preconditions](require.md).
+> **💡 Tip:** For a detailed explanation of when and how to use `Require`, including complete examples with symbolic
+> variables in inputs, see [Runtime Preconditions](require.md).
 
-**In practice:** The default `Require` implementation returns `true`, which works for most commands that don't use symbolic variables as input.
+**In practice:** The default `Require` implementation returns `true`, which works for most commands that don't use
+symbolic variables as input.
 
 ### 4. Execute: Running the Real Operation
 
@@ -348,6 +391,7 @@ public override Task<int> Execute(Counter sut, Env env, CounterState state, bool
 ---
 
 **Important:** The `Execute` method receives:
+
 - `sut`: Your system under test (the real object)
 - `env`: The environment with resolved values from previous commands
 - `state`: The current model state
@@ -383,11 +427,13 @@ public override Task<bool> Execute(DoorState sut, Env env, CartState state, stri
 
 **Returns:** The new state
 
-**Critical insight:** `Update` is called during *generation* (before any real execution happens) to maintain the structural state. 
-This allows subsequent commands in the sequence to evaluate their `Precondition` based on the evolved state. 
+**Critical insight:** `Update` is called during *generation* (before any real execution happens) to maintain the
+structural state.
+This allows subsequent commands in the sequence to evaluate their `Precondition` based on the evolved state.
 During *execution*, these variables are bound to actual runtime values in the `Env`.
 
-This is where you store the command's output as a **symbolic variable** (`Var<TOutput>`) that future commands can reference:
+This is where you store the command's output as a **symbolic variable** (`Var<TOutput>`) that future commands can
+reference:
 
 # [F#](#tab/fsharp)
 
@@ -409,7 +455,8 @@ The `outputVar` is a symbolic reference to this command's output. Later commands
 
 #### Projecting Fields from Structured Outputs
 
-When a command returns a structured type (like a record or class), you often want to store individual fields in your state rather than the entire object. Use `Var.map` (F#) or `.Select()` (C#) to project fields from the output:
+When a command returns a structured type (like a record or class), you often want to store individual fields in your
+state rather than the entire object. Use `Var.map` (F#) or `.Select()` (C#) to project fields from the output:
 
 # [F#](#tab/fsharp)
 
@@ -471,7 +518,9 @@ public class AddPersonCommand : Command<PersonRegistry, RegistryState, (string, 
 
 ---
 
-**How it works:** Both projected variables (`LastPersonName` and `LastPersonAge`) share the same underlying variable name - they point to the same `Person` object in the environment. When you resolve them, the projection function is applied to extract the specific field.
+**How it works:** Both projected variables (`LastPersonName` and `LastPersonAge`) share the same underlying variable
+name - they point to the same `Person` object in the environment. When you resolve them, the projection function is
+applied to extract the specific field.
 
 **You can chain projections:**
 
@@ -497,7 +546,8 @@ public override RegistryState Update(RegistryState state, (string, int) input, V
 
 ---
 
-This is particularly useful when you need to pass different parts of a command's output to different subsequent commands.
+This is particularly useful when you need to pass different parts of a command's output to different subsequent
+commands.
 
 ### 6. Ensure: Verifying Correctness
 
@@ -554,10 +604,10 @@ public override bool Ensure(Env env, CounterState oldState, CounterState newStat
 
 ---
 
-
 ## Commands Without Outputs
 
-Sometimes operations don't return meaningful values - they just perform side effects. For these, use `ActionCommand<TSystem, TState, TInput>`:
+Sometimes operations don't return meaningful values - they just perform side effects. For these, use
+`ActionCommand<TSystem, TState, TInput>`:
 
 # [F#](#tab/fsharp)
 
