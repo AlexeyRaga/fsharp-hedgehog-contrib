@@ -1,6 +1,7 @@
 namespace Hedgehog.Stateful.Tests.CSharp;
 
 using Hedgehog.Linq;
+using Hedgehog.Stateful.Linq;
 using Xunit;
 
 /*
@@ -95,10 +96,10 @@ public class ParallelIncrementCommand : Command<ThreadSafeCounter, ParallelCount
 
     public override bool Ensure(Env env, ParallelCounterState oldState, ParallelCounterState newState, bool input, int result)
     {
-        // For parallel testing, Ensure should only check weak postconditions
-        // The framework will verify linearizability by checking all interleavings
-        // We can only check that the result is a valid counter value
-        return result > 0; // After increment, value should be positive (assuming we start at 0)
+        // The linearizability checker tries all sequential interleavings
+        // and verifies that Ensure holds for at least one of them.
+        var oldCount = oldState.CurrentCount.Resolve(env);
+        return result == oldCount + 1;
     }
 }
 
@@ -122,7 +123,11 @@ public class ParallelDecrementCommand : Command<ThreadSafeCounter, ParallelCount
     public override ParallelCounterState Update(ParallelCounterState state, bool input, Var<int> outputVar) =>
         state with { CurrentCount = outputVar };
 
-    public override bool Ensure(Env env, ParallelCounterState oldState, ParallelCounterState newState, bool input, int output) => true;
+    public override bool Ensure(Env env, ParallelCounterState oldState, ParallelCounterState newState, bool input, int result)
+    {
+        var oldCount = oldState.CurrentCount.Resolve(env);
+        return result == oldCount - 1;
+    }
 }
 
 /// <summary>
@@ -145,7 +150,11 @@ public class ParallelGetCommand : Command<ThreadSafeCounter, ParallelCounterStat
     public override ParallelCounterState Update(ParallelCounterState state, bool input, Var<int> outputVar) =>
         state with { CurrentCount = outputVar };
 
-    public override bool Ensure(Env env, ParallelCounterState oldState, ParallelCounterState newState, bool input, int output) => true;
+    public override bool Ensure(Env env, ParallelCounterState oldState, ParallelCounterState newState, bool input, int result)
+    {
+        var count = oldState.CurrentCount.Resolve(env);
+        return result == count;
+    }
 }
 
 /// <summary>
@@ -178,11 +187,8 @@ public class ParallelCounterTests
     [Fact]
     public void ParallelCounterTest()
     {
-        var sut = new ThreadSafeCounter();
-        // This will:
-        // 1. Run a sequential prefix to set up initial state
-        // 2. Run two branches in parallel
-        // 3. Verify that the results are linearizable (match some sequential interleaving)
-        new ParallelCounterSpec().ToProperty(sut).Check();
+        // Use ToPropertyWith to create a fresh SUT for each test iteration
+        // This ensures the SUT state matches the model's initial state
+        new ParallelCounterSpec().ToPropertyWith(() => new ThreadSafeCounter()).Check();
     }
 }

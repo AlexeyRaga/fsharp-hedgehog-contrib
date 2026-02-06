@@ -71,6 +71,7 @@ type SequentialSpecification<'TSystem, 'TState>() =
     /// <summary>
     /// Convert this specification to a property using a SUT factory.
     /// The factory is called once per property test run to create a fresh SUT.
+    /// If the SUT implements IDisposable, it will be disposed after each test run.
     /// This is the recommended approach to ensure test isolation.
     /// </summary>
     /// <param name="createSut">A function that creates a new SUT instance for each test run.</param>
@@ -83,5 +84,28 @@ type SequentialSpecification<'TSystem, 'TState>() =
 
         gen |> Property.forAll (fun actions ->
             let sut = createSut()
-            Sequential.executeWithSUT sut actions
+            let cleanup () =
+                match box sut with
+                | :? System.IDisposable as d -> d.Dispose()
+                | _ -> ()
+            Sequential.executeWithSUTAndCleanup sut actions cleanup
+        )
+
+    /// <summary>
+    /// Convert this specification to a property using a SUT factory with explicit dispose.
+    /// The factory is called once per property test run to create a fresh SUT.
+    /// The dispose function is called after each test run completes (even if the test fails).
+    /// </summary>
+    /// <param name="createSut">A function that creates a new SUT instance for each test run.</param>
+    /// <param name="disposeSut">A function that disposes the SUT after each test run.</param>
+    /// <returns>A property representing the sequential specification test.</returns>
+    member this.ToPropertyWith(createSut: unit -> 'TSystem, disposeSut: 'TSystem -> unit) : Property<unit> =
+        let setupActions = this.SetupCommands |> Seq.map _.ToActionGen() |> List.ofSeq
+        let testActions = this.Commands |> Seq.map _.ToActionGen() |> List.ofSeq
+        let cleanupActions = this.CleanupCommands |> Seq.map _.ToActionGen() |> List.ofSeq
+        let gen = Sequential.genActions this.Range setupActions testActions cleanupActions this.InitialState Env.empty
+
+        gen |> Property.forAll (fun actions ->
+            let sut = createSut()
+            Sequential.executeWithSUTAndCleanup sut actions (fun () -> disposeSut sut)
         )

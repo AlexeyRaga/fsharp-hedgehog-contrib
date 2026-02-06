@@ -235,23 +235,22 @@ module Sequential =
         Error: exn option
     }
 
-    /// Execute actions with a SUT instance.
-    /// The SUT is passed as a typed parameter to each command's Execute and Ensure methods.
+    let private formatActionName (action: Action<'TSystem, 'TState>) : string =
+        match action.Category with
+        | ActionCategory.Setup -> $"+ {action.Name}"
+        | ActionCategory.Test -> action.Name
+        | ActionCategory.Cleanup -> $"- {action.Name}"
+
+    /// Build the async execution computation for a set of actions against a SUT.
+    /// This is the core execution logic shared by executeWithSUT and executeWithSUTAndCleanup.
     ///
-    /// Note: This function constructs a single async computation that executes all actions,
-    /// wrapped in Property.ofGen. This ensures that action.Execute is only called when
-    /// the property's lazy result is forced (during evaluation), not during tree construction.
-    /// This is critical for recheck performance - avoiding redundant executions during tree navigation.
+    /// Note: This function constructs a single async computation that executes all actions.
+    /// action.Execute is only called when the property's lazy result is forced (during evaluation),
+    /// not during tree construction. This is critical for recheck performance.
     ///
     /// Cleanup actions are guaranteed to run even if setup/test actions fail.
     /// All cleanup actions are attempted even if one fails.
-    let internal executeWithSUT (sut: 'TSystem) (actions: Actions<'TSystem, 'TState>) : Property<unit> =
-        let formatActionName (action: Action<'TSystem, 'TState>) : string =
-            match action.Category with
-            | ActionCategory.Setup -> $"+ {action.Name}"
-            | ActionCategory.Test -> action.Name
-            | ActionCategory.Cleanup -> $"- {action.Name}"
-
+    let private buildExecutionAsync (sut: 'TSystem) (actions: Actions<'TSystem, 'TState>) : Async<Journal * Outcome<unit>> =
         // Execute actions and build journal entries as we go (stops on first failure)
         let rec executeLoop state env steps journalEntries = async {
             match steps with
@@ -337,7 +336,7 @@ module Sequential =
         }
 
         // Execute and convert result to Property with proper journal
-        let executionAsync = async {
+        async {
             let initialEntry = fun () -> Counterexample $"Initial state: {actions.Initial}\n"
 
             // Execute setup actions first
@@ -390,4 +389,15 @@ module Sequential =
                 return (combinedJournal, Failure)
         }
 
-        Property.ofAsyncWithJournal executionAsync
+    /// Execute actions with a SUT instance.
+    let internal executeWithSUT (sut: 'TSystem) (actions: Actions<'TSystem, 'TState>) : Property<unit> =
+        Property.ofAsyncWithJournal (buildExecutionAsync sut actions)
+
+    /// Execute actions with a SUT instance, running a cleanup function after execution completes.
+    /// The cleanup function runs in a finally block and is guaranteed to execute.
+    let internal executeWithSUTAndCleanup (sut: 'TSystem) (actions: Actions<'TSystem, 'TState>) (cleanup: unit -> unit) : Property<unit> =
+        async {
+            try return! buildExecutionAsync sut actions
+            finally cleanup()
+        }
+        |> Property.ofAsyncWithJournal
