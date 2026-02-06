@@ -81,13 +81,12 @@ type ParallelIncrementCommand() =
     override _.Generate _ = Gen.constant ()
     override _.Update(_, _, outputVar) = { CurrentCount = outputVar }
 
-    // For parallel testing, Ensure should only check weak postconditions
-    // The framework will verify linearizability by checking all interleavings
-    override _.Ensure(_, _, _, _, result) =
-        // In a parallel context, we can't make strong assertions about the exact value
-        // The linearizability checker will verify the sequence is valid
-        // We can only check that the result is a valid counter value
-        result > 0  // After increment, value should be positive (assuming we start at 0)
+    // Ensure checks the output matches the model prediction.
+    // The linearizability checker tries all sequential interleavings
+    // and verifies that Ensure holds for at least one of them.
+    override _.Ensure(env, oldState, _, _, result) =
+        let oldCount = oldState.CurrentCount.Resolve(env)
+        result = oldCount + 1
 
 /// Decrement command - returns the new value after decrementing
 type ParallelDecrementCommand() =
@@ -99,6 +98,10 @@ type ParallelDecrementCommand() =
     override _.Generate _ = Gen.constant ()
     override _.Update(_, _, outputVar) = { CurrentCount = outputVar }
 
+    override _.Ensure(env, oldState, _, _, result) =
+        let oldCount = oldState.CurrentCount.Resolve(env)
+        result = oldCount - 1
+
 /// Get command - reads the current value
 type ParallelGetCommand() =
     inherit Command<ThreadSafeCounter, ParallelCounterState, unit, int>()
@@ -108,6 +111,10 @@ type ParallelGetCommand() =
     override _.Execute(counter, _, _, _) = Task.FromResult(counter.Get())
     override _.Generate _ = Gen.constant ()
     override _.Update(_, _, outputVar) = { CurrentCount = outputVar }
+
+    override _.Ensure(env, oldState, _, _, result) =
+        let count = oldState.CurrentCount.Resolve(env)
+        result = count
 
 /// ParallelSpecification for testing linearizability of ThreadSafeCounter
 type ParallelCounterSpec() =
@@ -131,9 +138,6 @@ type ParallelCounterSpec() =
 
 [<Fact>]
 let ``Parallel counter test - verifies linearizability of concurrent operations``() =
-    let sut = ThreadSafeCounter()
-    // This will:
-    // 1. Run a sequential prefix to set up initial state
-    // 2. Run two branches in parallel
-    // 3. Verify that the results are linearizable (match some sequential interleaving)
-    ParallelCounterSpec().ToProperty(sut).Check()
+    // Use ToPropertyWith to create a fresh SUT for each test iteration
+    // This ensures the SUT state matches the model's initial state
+    ParallelCounterSpec().ToPropertyWith(fun () -> ThreadSafeCounter()).Check()

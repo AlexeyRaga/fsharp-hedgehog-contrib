@@ -33,14 +33,18 @@ module Parallel =
             let! prefix, stateAfterPrefix, envAfterPrefix =
                 Sequential.genActionsWithState prefixRange [] testActions [] stateAfterSetup envAfterSetup
 
-            // Generate branches from state and environment after prefix
-            // Both branches start with the same state and environment (correct for parallel execution)
-            let! branch1Actions = Sequential.genActions branchRange [] testActions [] stateAfterPrefix envAfterPrefix
-            let! branch2Actions = Sequential.genActions branchRange [] testActions [] stateAfterPrefix envAfterPrefix
+            // Generate branches from state after prefix
+            // Both branches start with the same state (correct for parallel execution)
+            // but use distinct env ID ranges to avoid Name collisions when merging results
+            let! branch1Actions, _, envAfterBranch1 =
+                Sequential.genActionsWithState branchRange [] testActions [] stateAfterPrefix envAfterPrefix
+            let! branch2Actions, _, envAfterBranch2 =
+                Sequential.genActionsWithState branchRange [] testActions [] stateAfterPrefix envAfterBranch1
 
-            // Generate cleanup based on state and environment after prefix (not after branches, since branches run in parallel)
+            // Generate cleanup based on state after prefix (not after branches, since branches run in parallel)
+            // Use env after branch2 generation to avoid Name ID collisions with branch actions
             let! cleanupActions =
-                Sequential.genActions (Range.singleton 0) cleanupActions [] [] stateAfterPrefix envAfterPrefix
+                Sequential.genActions (Range.singleton 0) cleanupActions [] [] stateAfterPrefix envAfterBranch2
 
             return
                 { Initial = initialState
@@ -64,7 +68,8 @@ module Parallel =
         (results: Map<Name, obj>)
         : bool =
 
-        /// Try to execute a single action and return the new state/env if successful
+        /// Try to execute a single action and return the new state/env if successful.
+        /// Checks Precondition, Require, and Ensure postcondition against the recorded output.
         let tryExecuteAction state env (action: Action<'TSystem, 'TState>) =
             if not (action.Precondition state && action.Require env state) then
                 None
@@ -75,7 +80,13 @@ module Parallel =
                     let outputVar = Var.bound action.Id
                     let env' = Env.add outputVar output env
                     let state' = action.Update state outputVar
-                    Some(state', env')
+                    try
+                        if action.Ensure env' state state' output then
+                            Some(state', env')
+                        else
+                            None
+                    with _ ->
+                        None
 
         /// Recursively search for a valid interleaving of the two branches.
         /// Returns true as soon as a valid interleaving is found (early termination).
@@ -250,4 +261,14 @@ module Parallel =
                     do! Property.counterexample (fun () -> ex.ToString())
                 // Fail the property if any cleanup failed
                 return! Property.failure
+        }
+
+    /// Execute actions with a SUT instance, running a cleanup function after execution completes.
+    /// The cleanup function runs in a finally block and is guaranteed to execute.
+    let internal executeWithSUTAndCleanup (sut: 'TSystem) (actions: ParallelActions<'TSystem, 'TState>) (cleanup: unit -> unit) : Property<unit> =
+        property {
+            try
+                do! executeWithSUT sut actions
+            finally
+                cleanup()
         }
