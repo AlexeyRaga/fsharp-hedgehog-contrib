@@ -120,6 +120,7 @@ Setup and cleanup are modeled as command lists that execute before/after test ac
   abstract member Range : Range&lt;int&gt;
   abstract member SetupCommands : ICommand&lt;&#39;TSystem, &#39;TState&gt; array
   member ToProperty : &#39;TSystem -&gt; Property&lt;unit&gt;
+  member ToPropertyWith : createSut:unit -&gt; &#39;TSystem * disposeSut:&#39;TSystem -&gt; unit -&gt; Property&lt;unit&gt;
   member ToPropertyWith : unit -&gt; &#39;TSystem -&gt; Property&lt;unit&gt;</code></pre>
       </div>
       <div class="tab-pane" id="tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState_">
@@ -130,6 +131,7 @@ Setup and cleanup are modeled as command lists that execute before/after test ac
   abstract Range&lt;int&gt; Range()
   abstract ICommand&lt;TSystem, TState&gt; array SetupCommands()
   public static Property&lt;void&gt; ToProperty(TSystem sut)
+  public static Property&lt;void&gt; ToPropertyWith(void -&gt; TSystem createSut, TSystem -&gt; void disposeSut)
   public static Property&lt;void&gt; ToPropertyWith(void -&gt; TSystem createSut)
 }</code></pre>
       </div>
@@ -198,13 +200,62 @@ Setup and cleanup are modeled as command lists that execute before/after test ac
 
 
 
+  <h3 id="Hedgehog_Stateful_SequentialSpecification_TSystem__TState__ToPropertyWith_unit_TSystem" data-uid="Hedgehog.Stateful.SequentialSpecification_TSystem, TState_.ToPropertyWith-unit-TSystem">
+  ToPropertyWith
+  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/SequentialSpecification.fs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Convert this specification to a property using a SUT factory with explicit dispose.
+The factory is called once per property test run to create a fresh SUT.
+The dispose function is called after each test run completes (even if the test fails).</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>createSut</code>: A function that creates a new SUT instance for each test run.</li>
+<li><code>disposeSut</code>: A function that disposes the SUT after each test run.</li>
+</ul>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-fsharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__ToPropertyWith_unit_TSystem" type="button">F#</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__ToPropertyWith_unit_TSystem" type="button">C#</button>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane show active" id="tab-fsharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__ToPropertyWith_unit_TSystem">
+        <pre><code class="lang-fsharp hljs">member ToPropertyWith : createSut:unit -&gt; &#39;TSystem * disposeSut:&#39;TSystem -&gt; unit -&gt; Property&lt;unit&gt;</code></pre>
+      </div>
+      <div class="tab-pane" id="tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__ToPropertyWith_unit_TSystem">
+        <pre><code class="lang-csharp hljs">public static Property&lt;void&gt; ToPropertyWith(void -&gt; TSystem createSut, TSystem -&gt; void disposeSut)</code></pre>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <h3 id="Hedgehog_Stateful_SequentialSpecification_TSystem__TState__ToPropertyWith_unit" data-uid="Hedgehog.Stateful.SequentialSpecification_TSystem, TState_.ToPropertyWith-unit">
   ToPropertyWith
-  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/SequentialSpecification.fs/#L79"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/SequentialSpecification.fs/#L80"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Convert this specification to a property using a SUT factory.
 The factory is called once per property test run to create a fresh SUT.
+If the SUT implements IDisposable, it will be disposed after each test run.
 This is the recommended approach to ensure test isolation.</p>
 <p><strong>Parameters:</strong></p>
 <ul>
@@ -245,30 +296,72 @@ This is the recommended approach to ensure test isolation.</p>
 
 
 
-  <h3 id="Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Range" data-uid="Hedgehog.Stateful.SequentialSpecification_TSystem, TState_.Range">
-  Range
-  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/SequentialSpecification.fs/#L27"><i class="bi bi-code-slash"></i></a>
+  <h3 id="Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Commands" data-uid="Hedgehog.Stateful.SequentialSpecification_TSystem, TState_.Commands">
+  Commands
+  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/SequentialSpecification.fs/#L34"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Range of action sequence lengths to generate.</p>
+  <div class="markdown level1 summary"><p>Commands that operate on the SUT during the test sequence.
+The SUT is passed as a typed parameter to Execute methods.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
     <ul class="nav nav-tabs">
       <li class="nav-item">
-        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-fsharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Range" type="button">F#</button>
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-fsharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Commands" type="button">F#</button>
       </li>
       <li class="nav-item">
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Range" type="button">C#</button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Commands" type="button">C#</button>
       </li>
     </ul>
     <div class="tab-content">
-      <div class="tab-pane show active" id="tab-fsharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Range">
-        <pre><code class="lang-fsharp hljs">abstract member Range : Range&lt;int&gt;</code></pre>
+      <div class="tab-pane show active" id="tab-fsharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Commands">
+        <pre><code class="lang-fsharp hljs">abstract member Commands : ICommand&lt;&#39;TSystem, &#39;TState&gt; array</code></pre>
       </div>
-      <div class="tab-pane" id="tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Range">
-        <pre><code class="lang-csharp hljs">abstract Range&lt;int&gt; Range()</code></pre>
+      <div class="tab-pane" id="tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Commands">
+        <pre><code class="lang-csharp hljs">abstract ICommand&lt;TSystem, TState&gt; array Commands()</code></pre>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Hedgehog_Stateful_SequentialSpecification_TSystem__TState__InitialState" data-uid="Hedgehog.Stateful.SequentialSpecification_TSystem, TState_.InitialState">
+  InitialState
+  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/SequentialSpecification.fs/#L21"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>The initial model state.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-fsharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__InitialState" type="button">F#</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__InitialState" type="button">C#</button>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane show active" id="tab-fsharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__InitialState">
+        <pre><code class="lang-fsharp hljs">abstract member InitialState : &#39;TState</code></pre>
+      </div>
+      <div class="tab-pane" id="tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__InitialState">
+        <pre><code class="lang-csharp hljs">abstract TState InitialState()</code></pre>
       </div>
     </div>
   </div>
@@ -313,48 +406,6 @@ Default is an empty list (no setup).</p>
       </div>
       <div class="tab-pane" id="tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__SetupCommands">
         <pre><code class="lang-csharp hljs">abstract ICommand&lt;TSystem, TState&gt; array SetupCommands()</code></pre>
-      </div>
-    </div>
-  </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  <h3 id="Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Commands" data-uid="Hedgehog.Stateful.SequentialSpecification_TSystem, TState_.Commands">
-  Commands
-  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/SequentialSpecification.fs/#L34"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Commands that operate on the SUT during the test sequence.
-The SUT is passed as a typed parameter to Execute methods.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <ul class="nav nav-tabs">
-      <li class="nav-item">
-        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-fsharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Commands" type="button">F#</button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Commands" type="button">C#</button>
-      </li>
-    </ul>
-    <div class="tab-content">
-      <div class="tab-pane show active" id="tab-fsharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Commands">
-        <pre><code class="lang-fsharp hljs">abstract member Commands : ICommand&lt;&#39;TSystem, &#39;TState&gt; array</code></pre>
-      </div>
-      <div class="tab-pane" id="tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Commands">
-        <pre><code class="lang-csharp hljs">abstract ICommand&lt;TSystem, TState&gt; array Commands()</code></pre>
       </div>
     </div>
   </div>
@@ -417,30 +468,30 @@ Default is an empty list (no cleanup).</p>
 
 
 
-  <h3 id="Hedgehog_Stateful_SequentialSpecification_TSystem__TState__InitialState" data-uid="Hedgehog.Stateful.SequentialSpecification_TSystem, TState_.InitialState">
-  InitialState
-  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/SequentialSpecification.fs/#L21"><i class="bi bi-code-slash"></i></a>
+  <h3 id="Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Range" data-uid="Hedgehog.Stateful.SequentialSpecification_TSystem, TState_.Range">
+  Range
+  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/SequentialSpecification.fs/#L27"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>The initial model state.</p>
+  <div class="markdown level1 summary"><p>Range of action sequence lengths to generate.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
   <div class="codewrapper">
     <ul class="nav nav-tabs">
       <li class="nav-item">
-        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-fsharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__InitialState" type="button">F#</button>
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-fsharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Range" type="button">F#</button>
       </li>
       <li class="nav-item">
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__InitialState" type="button">C#</button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Range" type="button">C#</button>
       </li>
     </ul>
     <div class="tab-content">
-      <div class="tab-pane show active" id="tab-fsharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__InitialState">
-        <pre><code class="lang-fsharp hljs">abstract member InitialState : &#39;TState</code></pre>
+      <div class="tab-pane show active" id="tab-fsharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Range">
+        <pre><code class="lang-fsharp hljs">abstract member Range : Range&lt;int&gt;</code></pre>
       </div>
-      <div class="tab-pane" id="tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__InitialState">
-        <pre><code class="lang-csharp hljs">abstract TState InitialState()</code></pre>
+      <div class="tab-pane" id="tab-csharp-Hedgehog_Stateful_SequentialSpecification_TSystem__TState__Range">
+        <pre><code class="lang-csharp hljs">abstract Range&lt;int&gt; Range()</code></pre>
       </div>
     </div>
   </div>

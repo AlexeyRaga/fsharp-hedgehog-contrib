@@ -112,12 +112,16 @@ Class SpecificationExtensions  <a class="header-action link-secondary" title="Vi
     <div class="tab-content">
       <div class="tab-pane show active" id="tab-fsharp-Hedgehog_Stateful_Linq_SpecificationExtensions">
         <pre><code class="lang-fsharp hljs">type SpecificationExtensions =
+  member ToPropertyWith : spec:ParallelSpecification&lt;&#39;TSystem, &#39;TState&gt; * createSut:Func&lt;&#39;TSystem&gt; * disposeSut:Action&lt;&#39;TSystem&gt; -&gt; Property&lt;unit&gt;
   member ToPropertyWith : spec:ParallelSpecification&lt;&#39;TSystem, &#39;TState&gt; * createSut:Func&lt;&#39;TSystem&gt; -&gt; Property&lt;unit&gt;
+  member ToPropertyWith : spec:SequentialSpecification&lt;&#39;TSystem, &#39;TState&gt; * createSut:Func&lt;&#39;TSystem&gt; * disposeSut:Action&lt;&#39;TSystem&gt; -&gt; Property&lt;unit&gt;
   member ToPropertyWith : spec:SequentialSpecification&lt;&#39;TSystem, &#39;TState&gt; * createSut:Func&lt;&#39;TSystem&gt; -&gt; Property&lt;unit&gt;</code></pre>
       </div>
       <div class="tab-pane" id="tab-csharp-Hedgehog_Stateful_Linq_SpecificationExtensions">
         <pre><code class="lang-csharp hljs">public class SpecificationExtensions {
+  public static Property&lt;void&gt; ToPropertyWith(this ParallelSpecification&lt;TSystem, TState&gt; spec, Func&lt;TSystem&gt; createSut, Action&lt;TSystem&gt; disposeSut)
   public static Property&lt;void&gt; ToPropertyWith(this ParallelSpecification&lt;TSystem, TState&gt; spec, Func&lt;TSystem&gt; createSut)
+  public static Property&lt;void&gt; ToPropertyWith(this SequentialSpecification&lt;TSystem, TState&gt; spec, Func&lt;TSystem&gt; createSut, Action&lt;TSystem&gt; disposeSut)
   public static Property&lt;void&gt; ToPropertyWith(this SequentialSpecification&lt;TSystem, TState&gt; spec, Func&lt;TSystem&gt; createSut)
 }</code></pre>
       </div>
@@ -141,13 +145,63 @@ Class SpecificationExtensions  <a class="header-action link-secondary" title="Vi
 
 
 
+  <h3 id="Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_ParallelSpecification_Func_Action" data-uid="Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-ParallelSpecification-Func-Action">
+  ToPropertyWith
+  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/Linq/SpecificationExtensions.fs/#L65"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Convert a parallel specification to a property using a SUT factory with explicit dispose.
+The factory is called once per property test run to create a fresh SUT.
+The dispose action is called after each test run completes (even if the test fails).</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>spec</code>: The parallel specification.</li>
+<li><code>createSut</code>: A Func delegate that creates a new SUT instance for each test run.</li>
+<li><code>disposeSut</code>: An Action delegate that disposes the SUT after each test run.</li>
+</ul>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-fsharp-Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_ParallelSpecification_Func_Action" type="button">F#</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-csharp-Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_ParallelSpecification_Func_Action" type="button">C#</button>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane show active" id="tab-fsharp-Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_ParallelSpecification_Func_Action">
+        <pre><code class="lang-fsharp hljs">member ToPropertyWith : spec:ParallelSpecification&lt;&#39;TSystem, &#39;TState&gt; * createSut:Func&lt;&#39;TSystem&gt; * disposeSut:Action&lt;&#39;TSystem&gt; -&gt; Property&lt;unit&gt;</code></pre>
+      </div>
+      <div class="tab-pane" id="tab-csharp-Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_ParallelSpecification_Func_Action">
+        <pre><code class="lang-csharp hljs">public static Property&lt;void&gt; ToPropertyWith(this ParallelSpecification&lt;TSystem, TState&gt; spec, Func&lt;TSystem&gt; createSut, Action&lt;TSystem&gt; disposeSut)</code></pre>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <h3 id="Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_ParallelSpecification_Func" data-uid="Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-ParallelSpecification-Func">
   ToPropertyWith
-  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/Linq/SpecificationExtensions.fs/#L37"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/Linq/SpecificationExtensions.fs/#L52"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Convert a parallel specification to a property using a SUT factory.
 The factory is called once per property test run to create a fresh SUT.
+If the SUT implements IDisposable, it will be disposed after each test run.
 This is the recommended approach to ensure test isolation.</p>
 <p><strong>Parameters:</strong></p>
 <ul>
@@ -189,13 +243,63 @@ This is the recommended approach to ensure test isolation.</p>
 
 
 
+  <h3 id="Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_SequentialSpecification_Func_Action" data-uid="Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-SequentialSpecification-Func-Action">
+  ToPropertyWith
+  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/Linq/SpecificationExtensions.fs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Convert a sequential specification to a property using a SUT factory with explicit dispose.
+The factory is called once per property test run to create a fresh SUT.
+The dispose action is called after each test run completes (even if the test fails).</p>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>spec</code>: The sequential specification.</li>
+<li><code>createSut</code>: A Func delegate that creates a new SUT instance for each test run.</li>
+<li><code>disposeSut</code>: An Action delegate that disposes the SUT after each test run.</li>
+</ul>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-fsharp-Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_SequentialSpecification_Func_Action" type="button">F#</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-csharp-Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_SequentialSpecification_Func_Action" type="button">C#</button>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane show active" id="tab-fsharp-Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_SequentialSpecification_Func_Action">
+        <pre><code class="lang-fsharp hljs">member ToPropertyWith : spec:SequentialSpecification&lt;&#39;TSystem, &#39;TState&gt; * createSut:Func&lt;&#39;TSystem&gt; * disposeSut:Action&lt;&#39;TSystem&gt; -&gt; Property&lt;unit&gt;</code></pre>
+      </div>
+      <div class="tab-pane" id="tab-csharp-Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_SequentialSpecification_Func_Action">
+        <pre><code class="lang-csharp hljs">public static Property&lt;void&gt; ToPropertyWith(this SequentialSpecification&lt;TSystem, TState&gt; spec, Func&lt;TSystem&gt; createSut, Action&lt;TSystem&gt; disposeSut)</code></pre>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <h3 id="Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_SequentialSpecification_Func" data-uid="Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-SequentialSpecification-Func">
   ToPropertyWith
-  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/Linq/SpecificationExtensions.fs/#L25"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/hedgehogqa/fsharp-hedgehog/blob/master/src/Hedgehog.Stateful/Linq/SpecificationExtensions.fs/#L26"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Convert a sequential specification to a property using a SUT factory.
 The factory is called once per property test run to create a fresh SUT.
+If the SUT implements IDisposable, it will be disposed after each test run.
 This is the recommended approach to ensure test isolation.</p>
 <p><strong>Parameters:</strong></p>
 <ul>

@@ -175,11 +175,23 @@ references:
   commentId: M:Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-ParallelSpecification-Func
   fullName: Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-ParallelSpecification-Func
   nameWithType: ToPropertyWith
+- uid: Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-ParallelSpecification-Func-Action
+  name: ToPropertyWith
+  href: api/Hedgehog.Stateful.Linq.SpecificationExtensions.html#Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_ParallelSpecification_Func_Action
+  commentId: M:Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-ParallelSpecification-Func-Action
+  fullName: Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-ParallelSpecification-Func-Action
+  nameWithType: ToPropertyWith
 - uid: Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-SequentialSpecification-Func
   name: ToPropertyWith
   href: api/Hedgehog.Stateful.Linq.SpecificationExtensions.html#Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_SequentialSpecification_Func
   commentId: M:Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-SequentialSpecification-Func
   fullName: Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-SequentialSpecification-Func
+  nameWithType: ToPropertyWith
+- uid: Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-SequentialSpecification-Func-Action
+  name: ToPropertyWith
+  href: api/Hedgehog.Stateful.Linq.SpecificationExtensions.html#Hedgehog_Stateful_Linq_SpecificationExtensions_ToPropertyWith_SequentialSpecification_Func_Action
+  commentId: M:Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-SequentialSpecification-Func-Action
+  fullName: Hedgehog.Stateful.Linq.SpecificationExtensions.ToPropertyWith-SequentialSpecification-Func-Action
   nameWithType: ToPropertyWith
 - uid: Hedgehog.Stateful.Linq.VarExtensions
   name: VarExtensions
@@ -259,6 +271,12 @@ references:
   commentId: M:Hedgehog.Stateful.ParallelSpecification_TSystem, TState_.ToPropertyWith-unit
   fullName: Hedgehog.Stateful.ParallelSpecification_TSystem, TState_.ToPropertyWith-unit
   nameWithType: ToPropertyWith
+- uid: Hedgehog.Stateful.ParallelSpecification_TSystem, TState_.ToPropertyWith-unit-TSystem
+  name: ToPropertyWith
+  href: api/Hedgehog.Stateful.ParallelSpecification_TSystem%2C%20TState_.html#Hedgehog_Stateful_ParallelSpecification_TSystem__TState__ToPropertyWith_unit_TSystem
+  commentId: M:Hedgehog.Stateful.ParallelSpecification_TSystem, TState_.ToPropertyWith-unit-TSystem
+  fullName: Hedgehog.Stateful.ParallelSpecification_TSystem, TState_.ToPropertyWith-unit-TSystem
+  nameWithType: ToPropertyWith
 - uid: Hedgehog.Stateful.Sequential
   name: Sequential
   href: api/Hedgehog.Stateful.Sequential.html
@@ -312,6 +330,12 @@ references:
   href: api/Hedgehog.Stateful.SequentialSpecification_TSystem%2C%20TState_.html#Hedgehog_Stateful_SequentialSpecification_TSystem__TState__ToPropertyWith_unit
   commentId: M:Hedgehog.Stateful.SequentialSpecification_TSystem, TState_.ToPropertyWith-unit
   fullName: Hedgehog.Stateful.SequentialSpecification_TSystem, TState_.ToPropertyWith-unit
+  nameWithType: ToPropertyWith
+- uid: Hedgehog.Stateful.SequentialSpecification_TSystem, TState_.ToPropertyWith-unit-TSystem
+  name: ToPropertyWith
+  href: api/Hedgehog.Stateful.SequentialSpecification_TSystem%2C%20TState_.html#Hedgehog_Stateful_SequentialSpecification_TSystem__TState__ToPropertyWith_unit_TSystem
+  commentId: M:Hedgehog.Stateful.SequentialSpecification_TSystem, TState_.ToPropertyWith-unit-TSystem
+  fullName: Hedgehog.Stateful.SequentialSpecification_TSystem, TState_.ToPropertyWith-unit-TSystem
   nameWithType: ToPropertyWith
 - uid: Hedgehog.Stateful.Var
   name: Var
