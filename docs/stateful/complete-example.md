@@ -92,11 +92,11 @@ type IncrementCommand() =
         Task.FromResult(result)
     
     // Generate inputs (none needed for increment)
-    override _.Gen(state) = Gen.constant ()
-    
+    override _.Generate(state) = Gen.constant ()
+
     // Update our model state with the new value
     override _.Update(state, input, outputVar) = { CurrentCount = outputVar }
-    
+
     // Assert the result is correct
     override _.Ensure(env, oldState, newState, input, result) =
         let oldCount = oldState.CurrentCount.Resolve(env)
@@ -106,7 +106,7 @@ type IncrementCommand() =
 # [C#](#tab/csharp)
 
 ```csharp
-public class IncrementCommand : Command<Counter, CounterState, NoInput, int>
+public class IncrementCommand : Command<Counter, CounterState, NoValue, int>
 {
     // Name for debugging/shrinking output
     public override string Name => "Increment";
@@ -115,7 +115,7 @@ public class IncrementCommand : Command<Counter, CounterState, NoInput, int>
     public override bool Precondition(CounterState state) => true;
 
     // Execute the real operation on the SUT
-    public override Task<int> Execute(Counter sut, Env env, CounterState state, NoInput input)
+    public override Task<int> Execute(Counter sut, Env env, CounterState state, NoValue input)
     {
         sut.Increment();
         var result = sut.Get();
@@ -123,15 +123,15 @@ public class IncrementCommand : Command<Counter, CounterState, NoInput, int>
     }
 
     // Generate inputs (none needed for increment)
-    public override Gen<NoInput> Generate(CounterState state) =>
-        Gen.Constant(NoInput.Value);
+    public override Gen<NoValue> Generate(CounterState state) =>
+        Gen.Constant(NoValue.Value);
 
     // Update our model state with the new value
-    public override CounterState Update(CounterState state, NoInput input, Var<int> outputVar) =>
+    public override CounterState Update(CounterState state, NoValue input, Var<int> outputVar) =>
         state with { CurrentCount = outputVar };
 
     // Assert the result is correct
-    public override bool Ensure(Env env, CounterState oldState, CounterState newState, NoInput input, int result)
+    public override bool Ensure(Env env, CounterState oldState, CounterState newState, NoValue input, int result)
     {
         var oldCount = oldState.CurrentCount.Resolve(env);
         return result == oldCount + 1;
@@ -146,7 +146,7 @@ Let's break down each method:
 1. **Name**: Used in test output to show which command failed
 2. **Precondition**: Determines if this command can be generated in the current state (always `true` for simple commands)
 3. **Execute**: Runs the actual operation and returns the new count
-4. **Gen**: Generates random inputs (we use `unit` in F# or `NoInput` in C# since increment needs no meaningful input)
+4. **Generate**: Generates random inputs (we use `unit` in F# or `NoValue` in C# since increment needs no meaningful input)
 5. **Update**: Takes the output and creates the new model state
 6. **Ensure**: Verifies the result is what we expected (old count + 1)
 
@@ -169,10 +169,10 @@ type DecrementCommand() =
         let result = counter.Get()
         Task.FromResult(result)
     
-    override _.Gen _ = Gen.constant ()
-    
+    override _.Generate _ = Gen.constant ()
+
     override _.Update(_, _, outputVar) = { CurrentCount = outputVar }
-    
+
     override _.Ensure(env, oldState, newState, input, result) =
         let oldCount = oldState.CurrentCount.Resolve(env)
         result = oldCount - 1  // Should decrease by 1
@@ -181,26 +181,26 @@ type DecrementCommand() =
 # [C#](#tab/csharp)
 
 ```csharp
-public class DecrementCommand : Command<Counter, CounterState, NoInput, int>
+public class DecrementCommand : Command<Counter, CounterState, NoValue, int>
 {
     public override string Name => "Decrement";
 
     public override bool Precondition(CounterState state) => true;
 
-    public override Task<int> Execute(Counter sut, Env env, CounterState state, NoInput input)
+    public override Task<int> Execute(Counter sut, Env env, CounterState state, NoValue input)
     {
         sut.Decrement();
         var result = sut.Get();
         return Task.FromResult(result);
     }
 
-    public override Gen<NoInput> Generate(CounterState state) =>
-        Gen.Constant(NoInput.Value);
+    public override Gen<NoValue> Generate(CounterState state) =>
+        Gen.Constant(NoValue.Value);
 
-    public override CounterState Update(CounterState state, NoInput input, Var<int> outputVar) =>
+    public override CounterState Update(CounterState state, NoValue input, Var<int> outputVar) =>
         state with { CurrentCount = outputVar };
 
-    public override bool Ensure(Env env, CounterState oldState, CounterState newState, NoInput input, int result)
+    public override bool Ensure(Env env, CounterState oldState, CounterState newState, NoValue input, int result)
     {
         var oldCount = oldState.CurrentCount.Resolve(env);
         return result == oldCount - 1;  // Should decrease by 1
@@ -229,7 +229,7 @@ type ResetCommand() =
         let result = counter.Get()
         Task.FromResult(result)
     
-    override _.Gen(state) = Gen.constant ()
+    override _.Generate(state) = Gen.constant ()
     override _.Update(state, input, outputVar) = { CurrentCount = outputVar }
     override _.Ensure(env, oldState, newState, input, result) = result = 0
 ```
@@ -237,26 +237,26 @@ type ResetCommand() =
 # [C#](#tab/csharp)
 
 ```csharp
-public class ResetCommand : Command<Counter, CounterState, NoInput, int>
+public class ResetCommand : Command<Counter, CounterState, NoValue, int>
 {
     public override string Name => "Reset";
 
     public override bool Precondition(CounterState state) => true;
 
-    public override Task<int> Execute(Counter sut, Env env, CounterState state, NoInput input)
+    public override Task<int> Execute(Counter sut, Env env, CounterState state, NoValue input)
     {
         sut.Reset();
         var result = sut.Get();
         return Task.FromResult(result);
     }
 
-    public override Gen<NoInput> Generate(CounterState state) =>
-        Gen.Constant(NoInput.Value);
+    public override Gen<NoValue> Generate(CounterState state) =>
+        Gen.Constant(NoValue.Value);
 
-    public override CounterState Update(CounterState state, NoInput input, Var<int> outputVar) =>
+    public override CounterState Update(CounterState state, NoValue input, Var<int> outputVar) =>
         state with { CurrentCount = outputVar };
 
-    public override bool Ensure(Env env, CounterState oldState, CounterState newState, NoInput input, int result) =>
+    public override bool Ensure(Env env, CounterState oldState, CounterState newState, NoValue input, int result) =>
         result == 0; // Reset always returns 0
 }
 ```
@@ -280,10 +280,10 @@ type GetCommand() =
     override _.Execute(counter, env, state, input) = 
         Task.FromResult(counter.Get())
     
-    override _.Gen(state) = Gen.constant ()
-    
+    override _.Generate(state) = Gen.constant ()
+
     override _.Update(state, input, outputVar) = { CurrentCount = outputVar }
-    
+
     override _.Ensure(env, oldState, newState, input, result) =
         // Get should return exactly what's in our model
         result = oldState.CurrentCount.Resolve(env)
@@ -292,22 +292,22 @@ type GetCommand() =
 # [C#](#tab/csharp)
 
 ```csharp
-public class GetCommand : Command<Counter, CounterState, NoInput, int>
+public class GetCommand : Command<Counter, CounterState, NoValue, int>
 {
     public override string Name => "Get";
 
     public override bool Precondition(CounterState state) => true;
 
-    public override Task<int> Execute(Counter sut, Env env, CounterState state, NoInput input) =>
+    public override Task<int> Execute(Counter sut, Env env, CounterState state, NoValue input) =>
         Task.FromResult(sut.Get());
 
-    public override Gen<NoInput> Generate(CounterState state) =>
-        Gen.Constant(NoInput.Value);
+    public override Gen<NoValue> Generate(CounterState state) =>
+        Gen.Constant(NoValue.Value);
 
-    public override CounterState Update(CounterState state, NoInput input, Var<int> outputVar) =>
+    public override CounterState Update(CounterState state, NoValue input, Var<int> outputVar) =>
         state with { CurrentCount = outputVar };
 
-    public override bool Ensure(Env env, CounterState oldState, CounterState newState, NoInput input, int result)
+    public override bool Ensure(Env env, CounterState oldState, CounterState newState, NoValue input, int result)
     {
         // Get should return exactly what's in our model
         return result == oldState.CurrentCount.Resolve(env);
@@ -478,13 +478,13 @@ type SetCommand() =
     
     override _.Precondition(state) = true
     
-    override _.Execute(counter, _, value) =
+    override _.Execute(counter, _, _, value) =
         counter.Set(value)
         let result = counter.Get()
         Task.FromResult(result)
-    
+
     // Generate random integers between -10 and 100
-    override _.Gen _ = Gen.int32 (Range.linearFrom 0 -10 100)
+    override _.Generate _ = Gen.int32 (Range.linearFrom 0 -10 100)
     override _.Update(_, _, outputVar) = { CurrentCount = outputVar }
     override _.Ensure(_, _, _, input, result) = result = input
 ```
@@ -587,7 +587,7 @@ You've learned how to:
 3. **Implement the key methods** for each command:
    - `Name`: for debugging
    - `Precondition`: to control when the command can be generated
-   - `Gen`: to generate inputs
+   - `Generate`: to generate inputs
    - `Execute`: to run the real operation
    - `Update`: to update the model state
    - `Ensure`: to verify correctness

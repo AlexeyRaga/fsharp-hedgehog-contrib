@@ -410,7 +410,7 @@ override _.Execute(sut, env, state, input) =
 # [C#](#tab/csharp)
 
 ```csharp
-public override Task<bool> Execute(DoorState sut, Env env, CartState state, string input)
+public override Task<bool> Execute(Door sut, Env env, DoorState state, string input)
 {
     var code = state.LockCode.Resolve(env);
     return sut.UnlockDoorAsync(code, input);
@@ -637,25 +637,25 @@ type CloseConnectionCommand() =
 # [C#](#tab/csharp)
 
 ```csharp
-public class CloseConnectionCommand : ActionCommand<Database, DbState, NoInput>
+public class CloseConnectionCommand : ActionCommand<Database, DbState, NoValue>
 {
     public override string Name => "CloseConnection";
     
     public override bool Precondition(DbState state) => true;
     
-    public override Gen<NoInput> Generate(DbState state) =>
-        Gen.Constant(NoInput.Value);
+    public override Gen<NoValue> Generate(DbState state) =>
+        Gen.Constant(NoValue.Value);
     
-    public override Task Execute(Database sut, Env env, DbState state, NoInput input)
+    public override Task Execute(Database sut, Env env, DbState state, NoValue input)
     {
         sut.CloseConnection();
         return Task.CompletedTask;  // No return value
     }
     
-    public override DbState Update(DbState state, NoInput input) =>
+    public override DbState Update(DbState state, NoValue input) =>
         state with { IsConnected = false };  // No output var
     
-    public override bool Ensure(Env env, DbState oldState, DbState newState, NoInput input) =>
+    public override bool Ensure(Env env, DbState oldState, DbState newState, NoValue input) =>
         true;
 }
 ```

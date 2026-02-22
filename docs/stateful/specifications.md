@@ -131,9 +131,9 @@ public class CounterSpec : SequentialSpecification<Counter, CounterState>
     public override Range<int> Range => Range.Linear(1, 10);
     
     // Setup runs BEFORE the test sequence
-    public override ICommand<Counter, CounterState>[] SetupCommands => 
-        [ 
-            InitializeCommand()  // e.g., set counter to a random value
+    public override ICommand<Counter, CounterState>[] SetupCommands =>
+        [
+            new InitializeCommand()  // e.g., set counter to a random value
         ];
     
     // Main test commands
@@ -292,23 +292,23 @@ type IncrementCommand() =
 # [C#](#tab/csharp)
 
 ```csharp
-public class IncrementCommand : Command<ThreadSafeCounter, CounterState, NoInput, int>
+public class IncrementCommand : Command<ThreadSafeCounter, CounterState, NoValue, int>
 {
     public override string Name => "Increment";
     public override bool Precondition(CounterState state) => true;
     
-    public override Task<int> Execute(ThreadSafeCounter sut, Env env, CounterState state, NoInput input) =>
+    public override Task<int> Execute(ThreadSafeCounter sut, Env env, CounterState state, NoValue input) =>
         Task.FromResult(sut.Increment());
     
-    public override Gen<NoInput> Generate(CounterState state) => 
-        Gen.Constant(NoInput.Value);
+    public override Gen<NoValue> Generate(CounterState state) => 
+        Gen.Constant(NoValue.Value);
     
-    public override CounterState Update(CounterState state, NoInput input, Var<int> outputVar) =>
+    public override CounterState Update(CounterState state, NoValue input, Var<int> outputVar) =>
         state with { CurrentCount = outputVar };
     
     // Weak postcondition: we can't assert the exact value
     // Linearizability checking verifies the sequence is valid
-    public override bool Ensure(Env env, CounterState oldState, CounterState newState, NoInput input, int result) =>
+    public override bool Ensure(Env env, CounterState oldState, CounterState newState, NoValue input, int result) =>
         result > 0;  // After increment, should be positive
 }
 ```
