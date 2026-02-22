@@ -467,7 +467,7 @@ symbolic variables as input.</p>
 </section>
 <section id="tabpanel_5_csharp" role="tabpanel" data-tab="csharp" aria-hidden="true" hidden="hidden">
 
-<pre><code class="lang-csharp">public override Task&lt;bool&gt; Execute(DoorState sut, Env env, CartState state, string input)
+<pre><code class="lang-csharp">public override Task&lt;bool&gt; Execute(Door sut, Env env, DoorState state, string input)
 {
     var code = state.LockCode.Resolve(env);
     return sut.UnlockDoorAsync(code, input);
@@ -714,25 +714,25 @@ commands.</p>
 </section>
 <section id="tabpanel_11_csharp" role="tabpanel" data-tab="csharp" aria-hidden="true" hidden="hidden">
 
-<pre><code class="lang-csharp">public class CloseConnectionCommand : ActionCommand&lt;Database, DbState, NoInput&gt;
+<pre><code class="lang-csharp">public class CloseConnectionCommand : ActionCommand&lt;Database, DbState, NoValue&gt;
 {
     public override string Name =&gt; &quot;CloseConnection&quot;;
     
     public override bool Precondition(DbState state) =&gt; true;
     
-    public override Gen&lt;NoInput&gt; Generate(DbState state) =&gt;
-        Gen.Constant(NoInput.Value);
+    public override Gen&lt;NoValue&gt; Generate(DbState state) =&gt;
+        Gen.Constant(NoValue.Value);
     
-    public override Task Execute(Database sut, Env env, DbState state, NoInput input)
+    public override Task Execute(Database sut, Env env, DbState state, NoValue input)
     {
         sut.CloseConnection();
         return Task.CompletedTask;  // No return value
     }
     
-    public override DbState Update(DbState state, NoInput input) =&gt;
+    public override DbState Update(DbState state, NoValue input) =&gt;
         state with { IsConnected = false };  // No output var
     
-    public override bool Ensure(Env env, DbState oldState, DbState newState, NoInput input) =&gt;
+    public override bool Ensure(Env env, DbState oldState, DbState newState, NoValue input) =&gt;
         true;
 }
 </code></pre>
