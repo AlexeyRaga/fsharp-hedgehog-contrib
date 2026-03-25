@@ -39,7 +39,10 @@ public class AddPointsCommand : Command<Syllabus, List<PointSymbolic>, List<stri
     // state is just last list of points
     public override List<PointSymbolic> Update(List<PointSymbolic> state, List<string> input,
         Var<IReadOnlyList<Point>> outputVar) =>
-        input.Select(name => new PointSymbolic(outputVar.Select(o => o.First(p => p.Name == name).Id), name)).ToList();
+        input.Select(name =>
+            new PointSymbolic(outputVar.Select(o =>
+                o.First(p =>
+                    p.Name == name).Id), name)).ToList();
 }
 
 public class AddPointsCommand_VarsResolve : AddPointsCommand
@@ -56,20 +59,7 @@ public class AddPointsCommand_VarsDistinct : AddPointsCommand
 {
     public override bool Ensure(Env env, List<PointSymbolic> oldState, List<PointSymbolic> newState, List<string> input,
         IReadOnlyList<Point> output)
-        => newState.Select(p => p.Id).Distinct(new VarComparer<Guid>()).Count() == newState.Count();
-}
-
-public class VarComparer<T> : IEqualityComparer<Var<T>>
-{
-    public bool Equals(Var<T>? x, Var<T>? y)
-    {
-        return x?.Equals(y) ?? false;
-    }
-
-    public int GetHashCode(Var<T> obj)
-    {
-        return obj.GetHashCode();
-    }
+        => newState.Select(p => p.Id).Distinct().Count() == newState.Count;
 }
 
 public class MultiVarMapSpec : SequentialSpecification<Syllabus, List<PointSymbolic>>
@@ -79,7 +69,7 @@ public class MultiVarMapSpec : SequentialSpecification<Syllabus, List<PointSymbo
 
     public override ICommand<Syllabus, List<PointSymbolic>>[] Commands =>
     [
-        /*new AddPointsCommand_VarsResolve(),*/
+        // new AddPointsCommand_VarsResolve()
         new AddPointsCommand_VarsDistinct()
     ];
 }
