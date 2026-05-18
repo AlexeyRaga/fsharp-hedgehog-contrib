@@ -96,6 +96,22 @@ open ReverseMarkdown
 open FSharp.Compiler.Symbols
 open FSharp.Compiler.Text
 
+/// Locate a built assembly under `src/{projectName}/bin/{configuration}/{tfm}/` without hardcoding the TFM.
+/// The TFM directory is discovered by globbing — fails if the project hasn't been built yet,
+/// or if multi-targeting produces more than one candidate.
+let resolveAssembly (projectName: string) (configuration: string) : string =
+    let projectDir = Path.Combine("src", projectName)
+    let binDir = Path.Combine(projectDir, "bin", configuration)
+    if not (Directory.Exists binDir) then
+        failwithf $"Build output not found: %s{binDir}. Run 'dotnet build -c %s{configuration}' first."
+    let pattern = $"%s{projectName}.dll"
+    match Directory.GetFiles(binDir, pattern, SearchOption.AllDirectories) with
+    | [||] -> failwithf $"Could not find %s{pattern} under %s{binDir}."
+    | [| only |] -> only
+    | many ->
+        let list = String.Join(", ", many)
+        failwithf $"Multiple candidates for %s{pattern} under %s{binDir}: %s{list}. Resolve the multi-target ambiguity."
+
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
@@ -124,7 +140,7 @@ type DocFxConfig = {
 /// Default configuration for Hedgehog project
 let defaultConfig = {
     Assemblies = [
-        ("src/Hedgehog.Stateful/bin/Debug/net8.0/Hedgehog.Stateful.dll", "Hedgehog.Stateful")
+        (resolveAssembly "Hedgehog.Stateful" "Debug", "Hedgehog.Stateful")
     ]
     OutputDir = "docs/api"
 
@@ -1151,7 +1167,7 @@ let runWithArgs (args: string[]) : unit =
         else "Debug"
     
     let assemblies = [
-        ($"src/Hedgehog.Stateful/bin/%s{buildConfiguration}/net8.0/Hedgehog.Stateful.dll", "Hedgehog.Stateful")
+        (resolveAssembly "Hedgehog.Stateful" buildConfiguration, "Hedgehog.Stateful")
     ]
     
     let config = { defaultConfig with Assemblies = assemblies }
