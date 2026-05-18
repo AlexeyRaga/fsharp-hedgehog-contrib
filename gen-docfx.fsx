@@ -78,7 +78,7 @@
 //
 // ============================================================================
 
-#r "nuget: FSharp.Compiler.Service, 43.8.400"
+#r "nuget: FSharp.Compiler.Service, 43.12.203"
 #r "nuget: FSharp.Formatting"
 #r "nuget: YamlDotNet"
 #r "nuget: ReverseMarkdown"
