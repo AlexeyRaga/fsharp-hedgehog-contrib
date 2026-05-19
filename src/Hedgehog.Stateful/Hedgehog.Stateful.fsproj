@@ -5,6 +5,7 @@
         <Version>1.0.0</Version>
         <Description>Stateful testing for Hedgehog</Description>
         <PackageId>Hedgehog.Stateful</PackageId>
+        <TargetFramework>net10.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
