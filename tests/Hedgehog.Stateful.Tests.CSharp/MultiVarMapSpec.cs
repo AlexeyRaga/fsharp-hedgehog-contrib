@@ -45,6 +45,9 @@ public class AddPointsCommand : Command<Syllabus, List<PointSymbolic>, List<stri
                     p.Name == name).Id), name)).ToList();
 }
 
+// Verifies multiple Var.map projections of a single output resolve correctly
+// to their corresponding values. Var<T> equality is by Name (symbolic identity),
+// so to compare projected values you must Resolve them against the env first.
 public class AddPointsCommand_VarsResolve : AddPointsCommand
 {
     public override bool Ensure(Env env, List<PointSymbolic> oldState, List<PointSymbolic> newState, List<string> input,
@@ -55,13 +58,6 @@ public class AddPointsCommand_VarsResolve : AddPointsCommand
     }
 }
 
-public class AddPointsCommand_VarsDistinct : AddPointsCommand
-{
-    public override bool Ensure(Env env, List<PointSymbolic> oldState, List<PointSymbolic> newState, List<string> input,
-        IReadOnlyList<Point> output)
-        => newState.Select(p => p.Id).Distinct().Count() == newState.Count;
-}
-
 public class MultiVarMapSpec : SequentialSpecification<Syllabus, List<PointSymbolic>>
 {
     public override List<PointSymbolic> InitialState => [];
@@ -69,8 +65,7 @@ public class MultiVarMapSpec : SequentialSpecification<Syllabus, List<PointSymbo
 
     public override ICommand<Syllabus, List<PointSymbolic>>[] Commands =>
     [
-        // new AddPointsCommand_VarsResolve()
-        new AddPointsCommand_VarsDistinct()
+        new AddPointsCommand_VarsResolve()
     ];
 }
 

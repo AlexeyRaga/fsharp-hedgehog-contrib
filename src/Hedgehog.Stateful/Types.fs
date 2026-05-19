@@ -25,7 +25,7 @@ type Env = private {
 /// A symbolic variable is not yet bound to a generated value and is used to represent a value in the model before binding occurs.
 /// </summary>
 [<StructuredFormatDisplay("{DisplayText}")>]
-[<ReferenceEquality>]
+[<CustomEquality; CustomComparison>]
 type Var<'T> = private {
     /// <summary>
     /// The unique integer name of the variable.
@@ -106,6 +106,26 @@ Commands that use Var<T> inputs must override Require to call TryResolve and ret
 
     static member internal CreateSymbolic(value: 'T) : Var<'T> =
         { Name = -1; Default = Some value; Transform = unbox<'T> }
+
+    /// <summary>
+    /// Equality is by symbolic identity (<see cref="Name"/>). Two <c>Var&lt;T&gt;</c> with the same
+    /// <c>Name</c> refer to the same entry in the environment, regardless of any projections
+    /// applied via <c>Var.map</c>. To compare projected values, call <c>Resolve(env)</c> first
+    /// and compare the resulting values.
+    /// </summary>
+    override this.Equals(other: obj) : bool =
+        match other with
+        | :? Var<'T> as otherVar -> this.Name = otherVar.Name
+        | _ -> false
+
+    override this.GetHashCode() : int =
+        hash this.Name
+
+    interface System.IComparable with
+        member this.CompareTo(other: obj) : int =
+            match other with
+            | :? Var<'T> as otherVar -> compare this.Name otherVar.Name
+            | _ -> invalidArg (nameof other) "Cannot compare values of different types"
 
 
 module internal Env =
