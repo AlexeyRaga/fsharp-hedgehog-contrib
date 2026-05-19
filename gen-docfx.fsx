@@ -139,9 +139,7 @@ type DocFxConfig = {
 
 /// Default configuration for Hedgehog project
 let defaultConfig = {
-    Assemblies = [
-        (resolveAssembly "Hedgehog.Stateful" "Debug", "Hedgehog.Stateful")
-    ]
+    Assemblies = []
     OutputDir = "docs/api"
 
     RepoUrl = "https://github.com/hedgehogqa/fsharp-hedgehog.git"
